@@ -59,8 +59,20 @@ module.exports.loginUser = async (req, res) => {
 // @route   GET /api/users/me
 // @access  Private
 module.exports.getUser = async (req, res) => {
-  const { _id, email, password } = await User.findById(req.user.id);
-  res.status(200).json({ id: _id, email, password });
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      res.status(400).json({ message: 'User not found' });
+    }
+    res.status(200).json({
+      email:user.email,
+      username:user.name,
+      id:user._id
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 //generate token
