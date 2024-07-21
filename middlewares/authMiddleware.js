@@ -8,7 +8,8 @@ const verifyAuth= async (req,res,next)=>{
       try{
           token=req.headers.authorization.split(' ')[1];
           const decoded= jwt.verify(token,process.env.SECRET);
-          req.user= await User.findById(decoded.id).select('-password');
+          const id=decoded.data.split("+")[0];
+          req.user= await User.findById(id).select('-password');
           next();
       }catch(err){
         console.log(err);

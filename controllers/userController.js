@@ -24,7 +24,7 @@ module.exports.registerUser = async (req, res) => {
         _id: user.id,
         name: user.name,
         email: user.email,
-        token: generateToken(user._id),
+        token: generateToken(user._id,user.name),
       });
     } else {
       res.status(400).json({
@@ -46,7 +46,7 @@ module.exports.loginUser = async (req, res) => {
       _id: user.id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id),
+      token: generateToken(user._id,user.name),
     });
   } else {
     res.status(400).json({
@@ -76,8 +76,9 @@ module.exports.getUser = async (req, res) => {
 };
 
 //generate token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.SECRET, {
+const generateToken = (id,name) => {
+  const data=`${id}+${name}`
+  return jwt.sign({data}, process.env.SECRET, {
     expiresIn: '30d',
   });
 };
