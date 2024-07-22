@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Message = require('../models/Message');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
@@ -24,7 +25,7 @@ module.exports.registerUser = async (req, res) => {
         _id: user.id,
         name: user.name,
         email: user.email,
-        token: generateToken(user._id,user.name),
+        token: generateToken(user._id, user.name),
       });
     } else {
       res.status(400).json({
@@ -46,7 +47,7 @@ module.exports.loginUser = async (req, res) => {
       _id: user.id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id,user.name),
+      token: generateToken(user._id, user.name),
     });
   } else {
     res.status(400).json({
@@ -65,9 +66,9 @@ module.exports.getUser = async (req, res) => {
       res.status(400).json({ message: 'User not found' });
     }
     res.status(200).json({
-      email:user.email,
-      username:user.name,
-      id:user._id
+      email: user.email,
+      username: user.name,
+      id: user._id,
     });
   } catch (error) {
     console.error(error);
@@ -75,10 +76,38 @@ module.exports.getUser = async (req, res) => {
   }
 };
 
+// @desc    Get messages between users
+// @route   GET /api/messages/:id
+// @access  Private
+
+module.exports.getMessages = async (req, res) => {
+ if(req.params){
+  const recipientId = req.params.id;
+  const senderId = req.user.id;
+  if (recipientId && senderId) {
+    try {
+      const messages = await Message.find({
+        sender: { $in: [senderId, recipientId] },
+        recipient: { $in: [senderId, recipientId] },
+      }).sort({ createdAt: 1 });
+      res.status(200).json(messages);
+    } catch (err) {
+      console.log('error occured while fetching messages', err);
+      res
+        .status(400)
+        .json({ message: 'Error occured while retrieving messages' });
+    }
+  }
+}
+  else{
+    res.json(200).json('Select Recipient first!')
+  }
+};
+
 //generate token
-const generateToken = (id,name) => {
-  const data=`${id}+${name}`
-  return jwt.sign({data}, process.env.SECRET, {
+const generateToken = (id, name) => {
+  const data = `${id}+${name}`;
+  return jwt.sign({ data }, process.env.SECRET, {
     expiresIn: '30d',
   });
 };

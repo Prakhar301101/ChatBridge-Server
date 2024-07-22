@@ -60,6 +60,10 @@ wss.on('request', (request) => {
       broadcast({ type: 'connectedClients', clients: listConnectedClients() });
     });
   }
+  connection.on('close',()=>{
+    delete clients[connection.userId];
+    broadcast({ type: 'connectedClients', clients: listConnectedClients() });
+  })
 
   connection.on('message', async (message) => {
     const messageData = JSON.parse(message.utf8Data);
