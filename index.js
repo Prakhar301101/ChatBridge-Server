@@ -1,9 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 const app = express();
 const cors = require('cors');
-const PORT = process.env.PORT | 8000;
+const PORT = process.env.PORT || 8000;
 const jwt = require('jsonwebtoken');
 const Message = require('./models/Message');
 const userRoutes = require('./routes/userRoutes');
@@ -11,7 +12,11 @@ const ws = require('websocket');
 const webSocketServer = ws.server;
 
 app.use(express.json());
-app.use(cors('*'));
+app.use(cors({
+  credentials: true,
+  origin: process.env.CLIENT_URL,
+}));
+app.use(cookieParser());
 mongoose.connect(process.env.MONGODB_URL);
 
 app.use(userRoutes);
@@ -46,21 +51,22 @@ wss.on('request', (request) => {
   const connection = request.accept(null, request.origin);
 
   //getting token from the URL param
-  const urlParams = new URLSearchParams(request.resourceURL.query);
-  const token = urlParams.get('token');
-  if (token) {
-    jwt.verify(token, process.env.SECRET, {}, (err, data) => {
-      if (err) throw new Error(err);
-      const userData = data.data;
-      const [id, name] = userData.split('+');
+  
 
+  const cookie=request.cookies[0];
+  const jwtToken=cookie.value;
+  if (jwtToken) {
+    jwt.verify(jwtToken, process.env.SECRET, {}, (err, userData) => {
+      if (err) throw err;
+      else{
+      const {id, name} = userData;
       connection.userId = id;
-      connection.userName = name;
+      connection.username = name;
       clients[id] = connection;
       broadcast({ type: 'connectedClients', clients: listConnectedClients() });
-    });
-  }
-  
+    }
+  });
+  } 
   connection.on('message', async (message) => {
     const messageData = JSON.parse(message.utf8Data);
     const { recipient, text } = messageData;
@@ -85,6 +91,7 @@ wss.on('request', (request) => {
           }
         });
       }
+      else console.log('Not able to send message to recepient')
   });
 
   connection.on('close',()=>{
