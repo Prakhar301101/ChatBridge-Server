@@ -14,7 +14,7 @@ const webSocketServer = ws.server;
 app.use(express.json());
 app.use(cors({
   credentials: true,
-  origin: "*",
+  origin:'https://chatbridge-92b16.web.app',
 }));
 app.use(cookieParser());
 mongoose.connect(process.env.MONGODB_URL);
