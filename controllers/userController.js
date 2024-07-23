@@ -56,6 +56,15 @@ module.exports.loginUser = async (req, res) => {
   }
 };
 
+
+// @desc    LogOut user
+// @route   POST /api/users/logout
+// @access  Private
+
+module.exports.logoutUser=(req,res)=>{
+  res.status(200).json('User Logout');
+}
+
 // @desc    Get user info
 // @route   GET /api/users/me
 // @access  Private
@@ -75,6 +84,22 @@ module.exports.getUser = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+// @desc    Get All users
+// @route   GET /api/users
+// @access  Private
+
+module.exports.getAllUsers=async (req,res)=>{
+  try{
+    const Users=await User.find({},{'_id':1,'name':1});
+    res.status(200).json(Users);
+  }catch(err){
+    console.log(err);
+    res.status(400).json({message:'Failed to get Users'})
+  }
+}
+
 
 // @desc    Get messages between users
 // @route   GET /api/messages/:id
