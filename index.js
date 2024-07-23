@@ -14,7 +14,7 @@ const webSocketServer = ws.server;
 app.use(express.json());
 app.use(cors({
   credentials: true,
-  origin: process.env.CLIENT_URL,
+  origin: "*",
 }));
 app.use(cookieParser());
 mongoose.connect(process.env.MONGODB_URL);
