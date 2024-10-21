@@ -84,8 +84,9 @@ module.exports.logoutUser = (req, res) => {
   res
     .cookie('jwt', '', {
       httpOnly: true,
+      expires:new Date(0)
     })
-    .json('ok');
+    .json({message:'Logout Successful'});
 };
 
 // @desc    Get user info
